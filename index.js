@@ -8,7 +8,7 @@ const app = express();
 PORT = 3000
 
 //route
-app.get("/", (req, res)=>{
+app.get("/api/hello", (req, res)=>{
     const visitor = req.query.visitors_name 
 
     const ipAddress = 
