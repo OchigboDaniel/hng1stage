@@ -3,47 +3,83 @@ const express = require("express")
 const dotenv = require("dotenv")
 dotenv.config({path: "./.env"});
 
-const request = require("request")
+const request = require("request");
+const axios = require("axios");
 
 const app = express();
 
-//app.set("trust proxy", true)
-
-// port
-PORT = 4000
-
-//route
-//const api_key = 323f0f1211f0b115ea4e02a1b14e12ca
-
-
 app.get("/", (req, res)=>{
-    res.status(200).json({message: "ggggg"})
+    res.status(200).json({message: "Hello welcome visitor"})
 })
 
-app.get("/api/hello", (req, res)=>{
-    const visitor = req.query.visitors_name 
+// Function connecting to ipapi
+const ipapiConnection = async (visitorIP)=>{
+    try {
+        //Consuming the ipapi to get visitors location
+        const response = await axios.get(`https://ipapi.co/${visitorIP}/json/`)
 
-    const city = "abuja"
+        //Retrive the city
+        const {city} = response.data
 
-    const ipAddress = 
-    req.ip ||
-    req.headers['cf-connection-ip'] ||
-    req.headers['x-real-ip'] ||
-    req.headers['x-forwarded-for'] 
+        return { status: "success", data: city}
+        
+    } catch (error) {
+        return { status: "failed"}
+    }
+}
+
+app.get("/api/hello", async (req, res)=>{
+    
+    //Visitors name
+    const visitor = req.query.visitors_name || "Annonimous"
+
+    //stores visitors IP addresss
+    let visitorIP = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress
+
+    if (visitorIP === '::ffff:127.0.0.1' || visitorIP === '::1' || visitorIP === '127.0.0.1'){
+        visitorIP = "8.8.8.8"
+    }
 
 
-    const request = require("request");
-    request(`https://api.openweathermap.org/data/2.5/weather?q=abuja&appid=${ process.env.API_KEY }`,
-        function(error, response, body) {
-            if (response.statusCode = 200){
-                let data = JSON.parse(body)
-                console.log(data.weather[0].main)
-                res.send(`ip: ${ipAddress} The weather in ${city} is ${data.weather[0].main}`)
-            }
+    try {
+
+        // calling the ipapi connection function above
+        const getCity = await ipapiConnection(visitorIP);
+
+        //Handles ipapi connection failure
+        if (getCity.status === "failed"){
+            res.status(500).json({ message: "Failed to connect to ipapi"})
         }
-    )
+
+        // Handles the ipapi connection success
+        if (getCity.status === "success"){
+
+            // Stores city from the ipapi connection function
+            let city = getCity.data
+
+            //Consuming the Open weather api
+            const request = require("request");
+            request(`https://api.openweathermap.org/data/2.5/weather?q=${ city }&appid=${ process.env.API_KEY }`,
+                function(error, response, body) {
+                    if (response.statusCode = 200){
+
+                        let data = JSON.parse(body)
+                        console.log(data)
+                        
+                        res.send({
+                            client_ip: visitorIP,
+                            location: city,
+                            greeting:`Hello, ${visitor}!, the temerature is ${data.main.temp} degrees celcius in ${city}`})
+                    }
+            }
+        )
+        }
+        
+    } catch (error) {
+        res.status(500).json({ message: error.message})
+    }   
 })
 
-app.listen(5000, ()=>{
-    console.log(`App is runing on ${PORT}`)
+app.listen(process.env.PORT, ()=>{
+    console.log(`App is runing on ${process.env.PORT}`) 
 })
