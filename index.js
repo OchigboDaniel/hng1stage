@@ -11,10 +11,6 @@ const app = express();
 
 app.use(cors());
 
-app.get("/", (req, res)=>{
-    res.status(200).json({message: "Hello welcome visitor"})
-})
-
 // Function connecting to ipapi
 const ipapiConnection = async (visitorIP)=>{
     try {

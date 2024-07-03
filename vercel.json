@@ -1,11 +1,11 @@
 {
     "version": 2,
-    "build": [{
+    "builds": [{
         "scr": "index.js", 
         "use": "@vercel/node"}],
 
     "route": [{
-        "scr": "/(.*)", 
+        "scr": "/api/hello)", 
         "dest": "index.js"}]
 
 }
