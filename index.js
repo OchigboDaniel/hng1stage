@@ -33,14 +33,17 @@ app.get("/api/hello", async (req, res)=>{
     const visitor = req.query.visitors_name || "Annonimous"
 
     //stores visitors IP addresss
-    let visitorIp = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress
-    let visitorIP = visitorIp.split(':').pop();
+    let visitorIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress
+    
+    if (visitorIp.includes(':')){
+        visitorIp = visitorIp.split(':').pop();
+    }
 
 
     try {
 
         // calling the ipapi connection function above
-        const getCity = await ipapiConnection(visitorIP);
+        const getCity = await ipapiConnection(visitorIp);
 
         //Handles ipapi connection failure
         if (getCity.status === "failed"){
@@ -63,7 +66,7 @@ app.get("/api/hello", async (req, res)=>{
                         console.log(data)
                         
                         res.send({
-                            client_ip: visitorIP,
+                            client_ip: visitorIp,
                             location: city,
                             greeting:`Hello, ${visitor}!, the temerature is ${data.main.temp} degrees celcius in ${city}`})
                     }
