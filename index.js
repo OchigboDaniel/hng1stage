@@ -27,7 +27,7 @@ const ipapiConnection = async (visitorIP)=>{
     }
 }
 
-app.get("/api/hello?visitors_name=Mark", async (req, res)=>{
+app.get("/api/hello", async (req, res)=>{
     
     //Visitors name
     const visitor = req.query.visitors_name || "Annonimous"
