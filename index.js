@@ -33,7 +33,7 @@ app.get("/api/hello", async (req, res)=>{
     const visitor = req.query.visitors_name || "Annonimous"
 
     //stores visitors IP addresss
-    let visitorIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress
+    let visitorIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress
     
     if (visitorIp.includes(':')){
         visitorIp = visitorIp.split(':').pop();
