@@ -35,10 +35,6 @@ app.get("/api/hello", async (req, res)=>{
     //stores visitors IP addresss
     let visitorIP = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress
 
-    if (visitorIP === '::ffff:127.0.0.1' || visitorIP === '::1' || visitorIP === '127.0.0.1'){
-        visitorIP = "8.8.8.8"
-    }
-
 
     try {
 
